@@ -3,7 +3,7 @@ builder = "nixpacks"
 
 [deploy]
 startCommand = "cd api && python server.py"
-healthcheckPath = "/"
-healthcheckTimeout = 100
+healthcheckPath = "/api"
+healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
