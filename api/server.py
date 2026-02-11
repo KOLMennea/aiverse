@@ -15,6 +15,7 @@ from core import (
     AIVerse, Exchange, Agent, Company, Order, Trade, MarketData,
     OrderSide, OrderType, seed_initial_companies
 )
+from core.bots import BotManager
 
 
 # === PYDANTIC MODELS ===
@@ -81,6 +82,10 @@ world.exchange.agents[SYSTEM_AGENT_ID].balance = 1_000_000_000  # Infinite money
 # Seed initial companies
 seed_initial_companies(world, SYSTEM_AGENT_ID)
 
+# Bot manager
+bot_manager = BotManager(world)
+bot_manager.initialize()
+
 
 # === WEBSOCKET CONNECTIONS ===
 
@@ -142,8 +147,18 @@ app.add_middleware(
 
 # === ROUTES ===
 
+@app.on_event("startup")
+async def startup_event():
+    """Démarre les bots au lancement"""
+    bot_manager.start(interval=15.0)  # Trade every 15 seconds
+    print("🚀 AIVERSE is LIVE - Bots are trading!")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Arrête les bots"""
+    bot_manager.stop()
+
 @app.get("/")
-async def root():
     """Serve frontend or API info"""
     frontend_file = FRONTEND_DIR / "index.html"
     if frontend_file.exists():
