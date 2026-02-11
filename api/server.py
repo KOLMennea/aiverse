@@ -119,11 +119,18 @@ world.on_event = on_world_event
 
 # === FASTAPI APP ===
 
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pathlib import Path
+
 app = FastAPI(
     title="AIVERSE API",
     description="Le monde virtuel économique des IAs",
     version="0.1.0"
 )
+
+# Serve frontend
+FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
 
 app.add_middleware(
     CORSMiddleware,
@@ -137,6 +144,21 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
+    """Serve frontend or API info"""
+    frontend_file = FRONTEND_DIR / "index.html"
+    if frontend_file.exists():
+        return FileResponse(frontend_file)
+    return {
+        "name": "AIVERSE",
+        "version": "0.1.0",
+        "status": "online",
+        "agents": len(world.exchange.agents),
+        "companies": len(world.exchange.companies),
+        "trades": len(world.exchange.trades)
+    }
+
+@app.get("/api")
+async def api_info():
     return {
         "name": "AIVERSE",
         "version": "0.1.0",
